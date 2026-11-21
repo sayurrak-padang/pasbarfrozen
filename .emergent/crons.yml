@@ -1,0 +1,22 @@
+crons:
+  - name: abandoned-carts
+    description: "Sends a WhatsApp reminder to buyers whose cart sat untouched for 24 hours"
+    cron: "0 * * * *"
+    # Cron endpoints must ack 2xx immediately; enqueue/background the actual work.
+    endpoint: "{{BASE_URL}}/api/cron/abandoned-carts"
+    method: POST
+    enabled: true
+  - name: review-reminders
+    description: "Sends a WhatsApp review invitation about 24 hours after an order is completed"
+    cron: "15 * * * *"
+    # Cron endpoints must ack 2xx immediately; enqueue/background the actual work.
+    endpoint: "{{BASE_URL}}/api/cron/review-reminders"
+    method: POST
+    enabled: true
+  - name: flash-sale-wa
+    description: "Sends a WhatsApp Flash Sale announcement to customers at 07:00 WIB when a flash sale is scheduled today"
+    cron: "0 0 * * *"
+    # Cron endpoints must ack 2xx immediately; enqueue/background the actual work.
+    endpoint: "{{BASE_URL}}/api/cron/flash-sale-wa"
+    method: POST
+    enabled: true

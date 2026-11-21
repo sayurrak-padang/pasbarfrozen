@@ -1,0 +1,190 @@
+{
+  "project_name": "Rak Sayur Padang - Admin Dashboard & Fresh Grocery Experience",
+  "theme": "Dark Sidebar Admin + Fresh Botanical Light Content Surface",
+  "archetype": "ORGANIC & PERFORMANCE PRO HYBRID",
+  "brand_colors": {
+    "primary": "#16A34A",
+    "primary_hover": "#15803D",
+    "primary_light": "#DCFCE7",
+    "primary_border": "#86EFAC",
+    "accent_warm": "#F97316",
+    "accent_amber": "#D97706",
+    "sidebar_bg": "#0F172A",
+    "sidebar_hover": "#1E293B",
+    "sidebar_active": "#16A34A",
+    "sidebar_text": "#94A3B8",
+    "sidebar_text_active": "#FFFFFF",
+    "content_bg": "#F8FAFC",
+    "card_bg": "#FFFFFF",
+    "card_border": "#E2E8F0",
+    "text_primary": "#0F172A",
+    "text_secondary": "#475569",
+    "text_muted": "#64748B",
+    "chart_sales": "#16A34A",
+    "chart_profit": "#0284C7",
+    "status_completed": {
+      "bg": "#DCFCE7",
+      "text": "#15803D",
+      "border": "#86EFAC"
+    },
+    "status_pending": {
+      "bg": "#FEF3C7",
+      "text": "#B45309",
+      "border": "#FDE68A"
+    },
+    "status_processing": {
+      "bg": "#E0F2FE",
+      "text": "#0369A1",
+      "border": "#BAE6FD"
+    },
+    "status_cancelled": {
+      "bg": "#FEE2E2",
+      "text": "#B91C1C",
+      "border": "#FCA5A5"
+    }
+  },
+  "typography": {
+    "font_family_main": "'Plus Jakarta Sans', sans-serif",
+    "font_family_mono": "'JetBrains Mono', monospace",
+    "headings": {
+      "h1": "text-3xl font-bold tracking-tight text-slate-900 md:text-4xl",
+      "h2": "text-2xl font-bold tracking-tight text-slate-900 md:text-3xl",
+      "h3": "text-xl font-semibold tracking-tight text-slate-800",
+      "h4": "text-lg font-semibold text-slate-800",
+      "stat_value": "text-2xl font-extrabold tracking-tight text-slate-900 lg:text-3xl"
+    },
+    "body": {
+      "regular": "text-sm text-slate-600 leading-relaxed",
+      "bold": "text-sm font-semibold text-slate-900",
+      "small": "text-xs text-slate-500",
+      "label": "text-xs font-semibold uppercase tracking-wider text-slate-500"
+    }
+  },
+  "spacing_and_layout": {
+    "sidebar_width": "w-64",
+    "header_height": "h-16",
+    "container_padding": "p-4 md:p-6 lg:p-8",
+    "grid_stats": "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4",
+    "grid_charts": "grid grid-cols-1 lg:grid-cols-3 gap-6",
+    "grid_recipes": "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+  },
+  "visual_enhancers": {
+    "glassmorphism_nav": "bg-slate-900/90 backdrop-blur-md border-b border-slate-800/80",
+    "card_shadow": "shadow-sm border border-slate-200/80 hover:shadow-md transition-shadow duration-200 rounded-xl bg-white",
+    "stat_card_hover": "hover:-translate-y-0.5 transition-transform duration-200",
+    "badge_glow": "shadow-[0_0_12px_rgba(22,163,74,0.25)]",
+    "chart_gradient_sales": ["#16A34A", "rgba(22, 163, 74, 0.05)"],
+    "chart_gradient_profit": ["#0284C7", "rgba(2, 132, 199, 0.05)"]
+  },
+  "component_specs": {
+    "AdminSidebar": {
+      "container": "fixed inset-y-0 left-0 z-40 w-64 bg-slate-900 text-slate-300 border-r border-slate-800 flex flex-col justify-between transition-transform duration-300",
+      "brand_header": "h-16 flex items-center gap-3 px-6 border-b border-slate-800 bg-slate-950/50",
+      "nav_item": "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-slate-400 hover:bg-slate-800 hover:text-white",
+      "nav_item_active": "bg-emerald-600 text-white font-semibold shadow-sm hover:bg-emerald-600",
+      "badge": "ml-auto px-2 py-0.5 text-xs font-bold rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+    },
+    "StatCard": {
+      "card": "p-5 rounded-xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between hover:border-emerald-300 transition-all",
+      "icon_wrapper": "p-2.5 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100",
+      "title": "text-xs font-semibold uppercase tracking-wider text-slate-500",
+      "value": "text-2xl font-bold text-slate-900 mt-2",
+      "trend_up": "text-xs font-semibold text-emerald-600 flex items-center gap-1 mt-1",
+      "trend_down": "text-xs font-semibold text-rose-600 flex items-center gap-1 mt-1"
+    },
+    "ChartSection": {
+      "container": "p-6 rounded-xl bg-white border border-slate-200 shadow-sm col-span-2",
+      "header": "flex items-center justify-between mb-6",
+      "chart_height": "h-[320px]"
+    },
+    "RecipeCard": {
+      "container": "group rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 flex flex-col",
+      "image": "w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300",
+      "badge_time": "px-2.5 py-1 text-xs font-medium rounded-full bg-slate-900/70 backdrop-blur-md text-white border border-white/20 flex items-center gap-1",
+      "content": "p-5 flex-1 flex flex-col justify-between",
+      "button": "w-full mt-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg py-2 transition-colors flex items-center justify-center gap-2"
+    },
+    "ReviewDialog": {
+      "star_filled": "text-amber-400 fill-amber-400 w-5 h-5",
+      "star_empty": "text-slate-300 w-5 h-5",
+      "photo_grid": "grid grid-cols-4 gap-2 mt-3",
+      "photo_thumbnail": "w-16 h-16 rounded-lg object-cover border border-slate-200 hover:scale-105 transition-transform cursor-pointer",
+      "admin_reply_box": "mt-3 p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs text-slate-700"
+    }
+  },
+  "media": {
+    "recipe_photos": [
+      {
+        "id": "rendang_padang",
+        "title": "Rendang Daging Sapi Khas Padang",
+        "url": "https://images.pexels.com/photos/37080534/pexels-photo-37080534.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+      },
+      {
+        "id": "gulai_ayam",
+        "title": "Gulai Ayam Padang Gurih",
+        "url": "https://images.unsplash.com/photo-1791013010510-41a6fc1911ac?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzl8MHwxfHNlYXJjaHwzfHxpbmRvbmVzaWFuJTIwZm9vZCUyMHJlbmRhbmclMjBjdXJyeSUyMGRpc2h8ZW58MHx8fHwxNzkyMTE4NDE3fDA&ixlib=rb-4.1.0&q=85"
+      },
+      {
+        "id": "sayur_nangka",
+        "title": "Gulai Sayur Nangka & Kacang Panjang",
+        "url": "https://images.unsplash.com/photo-1553787434-45e1d245bfbb?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxOTF8MHwxfHNlYXJjaHwxfHxmcmVzaCUyMG9yZ2FuaWMlMjB2ZWdldGFibGVzJTIwaW5kb25lc2lhbiUyMGZvb2QlMjBwYWRhbmclMjByZWNpcGV8ZW58MHx8fHwxNzkyMTE4NDA4fDA&ixlib=rb-4.1.0&q=85"
+      },
+      {
+        "id": "sambal_ijo",
+        "title": "Sambal Hijau Padang Fresh",
+        "url": "https://images.unsplash.com/photo-1571051549906-a659836d71f9?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxOTF8MHwxfHNlYXJjaHw0fHxmcmVzaCUyMG9yZ2FuaWMlMjB2ZWdldGFibGVzJTIwaW5kb25lc2lhbiUyMGZvb2QlMjBwYWRhbmclMjByZWNpcGV8ZW58MHx8fHwxNzkyMTE4NDA4fDA&ixlib=rb-4.1.0&q=85"
+      }
+    ],
+    "grocery_products": [
+      {
+        "id": "cabe_hijau",
+        "title": "Cabai Hijau Besar Segar 250g",
+        "url": "https://images.unsplash.com/photo-1571051549906-a659836d71f9?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxOTF8MHwxfHNlYXJjaHw0fHxmcmVzaCUyMG9yZ2FuaWMlMjB2ZWdldGFibGVzJTIwaW5kb25lc2lhbiUyMGZvb2QlMjBwYWRhbmclMjByZWNpcGV8ZW58MHx8fHwxNzkyMTE4NDA4fDA&ixlib=rb-4.1.0&q=85"
+      },
+      {
+        "id": "sayuran_segar",
+        "title": "Paket Sayur Asam & Sup Segar",
+        "url": "https://images.unsplash.com/photo-1505692794401-b371fa865622?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxOTF8MHwxfHNlYXJjaHwzfHxmcmVzaCUyMG9yZ2FuaWMlMjB2ZWdldGFibGVzJTIwaW5kb25lc2lhbiUyMGZvb2QlMjBwYWRhbmclMjByZWNpcGV8ZW58MHx8fHwxNzkyMTE4NDA4fDA&ixlib=rb-4.1.0&q=85"
+      }
+    ]
+  },
+  "motion": {
+    "hover_lift": "hover:-translate-y-1 transition-transform duration-200 ease-out",
+    "active_press": "active:scale-95 transition-transform duration-100",
+    "sidebar_slide": "transition-all duration-300 ease-in-out",
+    "modal_fade": "animate-in fade-in zoom-in-95 duration-200"
+  },
+  "accessibility": {
+    "contrast_ratio": "APCA 4.5:1 minimum on all labels and navigation items",
+    "focus_ring": "focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2",
+    "screen_reader": "aria-label for all icon-only buttons like toggle sidebar, chat badge, status update"
+  },
+  "instructions_to_main_agent": [
+    "Ensure dark left sidebar (#0F172A) stays persistent with all 13 nav sections: Ringkasan, Produk, Pesanan, Voucher, Banner, Kategori, Resep, Ulasan, Konsumen, Komplain, Chat, Laba Rugi, Pengaturan Toko.",
+    "Add unread notification badge on 'Chat' nav menu item.",
+    "Provide a smooth responsive drawer for mobile layout using standard Shadcn Sheet or mobile menu toggle.",
+    "Overview section must feature 6 crisp metric stat cards: Pendapatan, Laba Kotor, Total Pesanan, Menunggu Bayar, Produk Aktif, Rating Rata-Rata.",
+    "Recharts area/bar combined chart must show 14-day daily sales and net daily profit with custom tooltip and green/sky gradients.",
+    "Implement recent orders list with interactive status filter badges (Semua, Menunggu, Diproses, Selesai, Dibatalkan) and direct status update action buttons.",
+    "Build the customer-facing 'Resep' tab/page with AI photo grid, cooking time, serving count, linked product ingredients, and a prominent 'Masukkan Semua Bahan ke Keranjang' button.",
+    "Build 'Admin Resep' creation tab with form inputs for AI image selection, ingredient search & link to store products, and step-by-step editor.",
+    "Build 'Ulasan' (Reviews) system with 1-5 star ratings, customer comment, customer attached photos, product detail reviews list, and admin reply/hide toggle.",
+    "Include data-testid attributes on all interactive elements across components."
+  ],
+  "UNIVERSAL GUIDELINES FOR MAIN AGENT": [
+    "You tend to converge toward generic, 'on distribution' outputs. Avoid this: make creative, distinctive frontends that surprise and delight.",
+    "Dark colors look good when used independently without gradients. DO NOT use dark colors as gradients.",
+    "Don't make generic centered layouts, simplistic gradients, and uniform styling.",
+    "Create depth through layered design elements with z-index hierarchy.",
+    "Use glassmorphism effects with backdrop filters (12-24px blur).",
+    "You MUST NOT apply universal transition. Eg: transition: all. Always add transitions for specific interactive elements.",
+    "You MUST NOT center align the app container, i.e. do not add .App { text-align: center; }.",
+    "Always use modern button styles like pill-shaped, or sharp button with interaction animations & color relevant to the app style.",
+    "NEVER use AI assistant Emoji characters like 🤖🧠💭💡🔮🎯 etc for icons.",
+    "Every interaction needs micro-animations - hover states, transitions, entrance animations. Static = dead.",
+    "Use generous spacing (2-3x default) to keep layouts breathable.",
+    "Subtle grain textures, selection states, and loading animations separate good from extraordinary.",
+    "All interactive and key informational elements MUST include data-testid attribute for automated testing.",
+    "Toasts: Use sonner for notifications."
+  ]
+}

@@ -1,0 +1,66 @@
+[
+ {
+  "slug": "dairy",
+  "name": "Dairy",
+  "icon": "Milk",
+  "fresh": false,
+  "virtual": false,
+  "image": "https://wastore.id/uploads/products/prod_6a20f45ee27ed.jpg"
+ },
+ {
+  "slug": "daging-sapi",
+  "name": "Daging Sapi",
+  "icon": "Beef",
+  "fresh": false,
+  "virtual": false,
+  "image": "https://wastore.id/uploads/products/prod_6a20f4e291a27.jpg"
+ },
+ {
+  "slug": "ayam",
+  "name": "Ayam",
+  "icon": "Flame",
+  "fresh": false,
+  "virtual": false,
+  "image": "https://wastore.id/uploads/products/prod_6a20f7d28beae.jpg"
+ },
+ {
+  "slug": "nugget-sosis",
+  "name": "Nugget & Sosis",
+  "icon": "Snowflake",
+  "fresh": false,
+  "virtual": false,
+  "image": "https://wastore.id/uploads/products/prod_6a214d6f506a3.jpg"
+ },
+ {
+  "slug": "seafood",
+  "name": "Seafood",
+  "icon": "Fish",
+  "fresh": false,
+  "virtual": false,
+  "image": "https://wastore.id/uploads/products/prod_6a2164da17a2f.jpg"
+ },
+ {
+  "slug": "camilan",
+  "name": "Camilan",
+  "icon": "Croissant",
+  "fresh": false,
+  "virtual": false,
+  "image": "https://wastore.id/uploads/products/prod_6a211742ed795.jpg"
+ },
+ {
+  "slug": "saus-bumbu",
+  "name": "Saus & Bumbu",
+  "icon": "CookingPot",
+  "fresh": false,
+  "virtual": false,
+  "image": "https://wastore.id/uploads/products/prod_6a225eb223855.jpg"
+ },
+ {
+  "slug": "lainnya",
+  "name": "Lainnya",
+  "icon": "Package",
+  "fresh": false,
+  "virtual": false,
+  "image": "https://wastore.id/uploads/products/prod_6a211c7e03ca0.jpg"
+ }
+]

@@ -1,0 +1,56 @@
+{
+  "_panduan": "Satu-satunya file yang perlu diubah untuk merek baru. Setelah mengubah, jalankan: python3 scripts/terapkan_merek.py . Penjelasan tiap isian ada di PANDUAN-TEMPLATE.md.",
+  "name": "Pasbar Frozen",
+  "shortName": "Pasbar Frozen",
+  "slug": "pasbarfrozen",
+  "domain": "pasbarfrozen.com",
+  "pageTitle": "Pasbar Frozen | Belanja enak, dari rumah",
+  "description": "Katalog frozen food Pasbar Frozen. Belanja, kelola pesanan dan pengiriman dari Pasaman Barat.",
+  "tagline": "Dari freezer, ke meja makan",
+  "copyrightYear": 2026,
+  "walletName": "Saldo Pasbar Frozen",
+  "kitchenName": "Dapur Pasbar Frozen",
+  "adminName": "Owner Pasbar Frozen",
+  "logoUrl": "/logo.png",
+  "login": {
+    "heroImage": "https://images.unsplash.com/photo-1666013942642-b7b54ecafd7d?auto=format&fit=crop&w=1080&q=75",
+    "heroCredit": "Sergey Kotenev / Unsplash",
+    "heroTitle": "Dari Freezer, ke Meja Makan",
+    "heroText": "Pilihan frozen food untuk setiap selera: daging, ayam, seafood, nugget, sosis, dan bumbu. Dikirim dari Pasaman Barat.",
+    "sideTitle": "Temukan Favorit Keluarga dalam Satu Tempat"
+  },
+  "city": {
+    "name": "Pasaman Barat",
+    "short": "Pasbar",
+    "province": "Sumatera Barat",
+    "matchRegex": "^\\s*(kab(upaten|\\.)?\\s+)?pasaman\\s+barat\\s*$",
+    "mapCenter": [
+      0.1333,
+      99.8167
+    ],
+    "originPostal": "26566",
+    "cuisine": "Minang/Pasaman"
+  },
+  "messages": {
+    "thanks": "Terima kasih sudah belanja di Pasbar Frozen!",
+    "delivered": "Selamat menikmati frozen food dari Pasbar Frozen!"
+  },
+  "colors": {
+    "palette": "sky",
+    "button": "#0284c7",
+    "header": "#0369a1",
+    "headerDark": "#075985",
+    "headerLight": "#0ea5e9",
+    "accent": "#0284c7",
+    "accentLight": "#38bdf8",
+    "accentSoft": "#e0f2fe",
+    "yellow": "#f8d455",
+    "yellowInk": "#451a03",
+    "flashFrom": "#d62d21",
+    "flashTo": "#ed702d",
+    "background": "#f8fafc",
+    "surface": "#ffffff",
+    "shadow": "#082f49",
+    "themeColor": "#0369a1"
+  }
+}
