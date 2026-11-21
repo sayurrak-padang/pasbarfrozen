@@ -1,11 +1,35 @@
-# Prompt Siap Tempel: Bangun Ulang Toko dari Template
+# Prompt Siap Tempel untuk Pasbar Frozen
 
-Pakai prompt ini di Emergent (job baru dengan **Import from GitHub**) atau AI pembuat kode lain
-yang bisa membaca repo. Ganti semua bagian dalam `<...>` dengan data merek Anda. Jangan
-menempelkan kunci rahasia (Midtrans, Twilio, dan sebagainya) ke dalam prompt; isi lewat
-Environment/Secrets.
+Repo ini SUDAH berisi merek Pasbar Frozen (brand.config.json, logo, warna, katalog, artikel).
+Tempel prompt di bawah ini apa adanya ke chat agen Emergent. Jangan menempelkan kunci rahasia
+(Midtrans, Twilio, dan sebagainya) ke dalam prompt; isi lewat Environment/Secrets.
 
 ---
+
+```text
+Repo ini adalah toko online Pasbar Frozen (frozen food, Pasaman Barat, domain pasbarfrozen.com)
+yang dibuat dari template toko online. Semua fitur dan data merek SUDAH ADA dan SUDAH BENAR.
+JANGAN mengubah brand.config.json, logo, warna, katalog produk, artikel, atau kode. JANGAN
+memakai data contoh lain (misalnya "Pasar Buah Medan").
+
+Langkah yang harus dikerjakan, persis berurutan:
+1. Baca PANDUAN-TEMPLATE.md.
+2. Jalankan: python3 scripts/terapkan_merek.py --cek, lalu python3 scripts/terapkan_merek.py.
+   Hasilnya harus "Konfigurasi OK untuk merek: Pasbar Frozen (pasbarfrozen.com)".
+3. Pastikan variabel lingkungan backend sesuai backend/.env.example dan frontend sesuai
+   frontend/.env.example. DB_NAME harus "pasbarfrozen". Kalau ada variabel yang belum saya
+   isi (misalnya ADMIN_EMAIL atau kunci Midtrans), tanyakan ke saya, jangan mengarang nilainya.
+4. Restart backend dan frontend (sudo supervisorctl restart backend frontend).
+5. Periksa: judul tab "Pasbar Frozen | Belanja enak, dari rumah", header "ke Pasaman Barat",
+   warna biru, kategori Dairy/Daging Sapi/Ayam/Nugget & Sosis/Seafood/Camilan/Saus & Bumbu/
+   Lainnya, halaman /login dan /bantuan menyebut Pasbar Frozen, panel admin menampilkan
+   nama Pasbar Frozen, dan tidak ada error di konsol browser maupun log backend.
+6. Laporkan hasilnya ke saya. Jangan commit perubahan apa pun kecuali saya minta.
+```
+
+---
+
+## Prompt umum template (untuk merek lain, BUKAN untuk Pasbar Frozen)
 
 ```text
 Repo ini adalah template toko online lengkap (FastAPI + MongoDB di backend/, Vite + React 19
