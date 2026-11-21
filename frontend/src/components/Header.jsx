@@ -7,7 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 import { BRAND } from "@/config/brand";
 
 export const DELIVERY_MODES = {
-  instan: { title: "Dikirim Hari Ini", label: "Instan", hint: "Grab / Gojek", icon: Zap, placeholder: "Cari sayur, buah, bumbu..." },
+  instan: { title: "Dikirim Hari Ini", label: "Instan", hint: "Kurir Toko", icon: Zap, placeholder: "Cari ayam, daging, nugget, sosis..." },
   reguler: { title: "Dikirim Reguler", label: "Reguler", hint: "JNE / J&T", icon: Truck, placeholder: "Cari produk kering & sembako..." },
 };
 

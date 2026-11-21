@@ -1,6 +1,7 @@
 import { Check, CalendarClock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { rupiah } from "@/lib/api";
+import { ManualPayBox, MANUAL_PAYMENTS } from "@/components/checkout/ManualPayment";
 
 const PaymentBox = ({ order, onPay }) => {
   const paid = order.status !== "Menunggu Pembayaran";
@@ -20,7 +21,7 @@ const PaymentBox = ({ order, onPay }) => {
   );
 };
 
-export const CheckoutSuccess = ({ order, onPay, onViewOrders }) => (
+export const CheckoutSuccess = ({ order, onPay, onUpdate, onViewOrders }) => (
   <div className="text-center py-4">
     <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
       <Check className="w-8 h-8 text-primary" />
@@ -34,6 +35,8 @@ export const CheckoutSuccess = ({ order, onPay, onViewOrders }) => (
     )}
     {order.payment_method === "cod" ? (
       <p className="mt-4 text-sm bg-emerald-50 text-emerald-700 rounded-xl p-3">Siapkan uang tunai {rupiah(order.total)} saat kurir tiba.</p>
+    ) : MANUAL_PAYMENTS.includes(order.payment_method) ? (
+      <ManualPayBox order={order} onDone={onUpdate} />
     ) : (
       <PaymentBox order={order} onPay={onPay} />
     )}

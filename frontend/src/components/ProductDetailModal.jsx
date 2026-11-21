@@ -66,7 +66,7 @@ export const ProductDetailModal = ({ product, onClose }) => {
             {product.cold && <div className="mt-3"><ColdNote testid="detail-cold-note" /></div>}
             <div className="flex items-center gap-1.5 text-xs text-emerald-700 mt-3">
               <Truck className="w-4 h-4" />
-              {product.fresh ? "Kurir instan Grab/Gojek" : product.cold ? "Kurir instan / Paxel" : "Bisa JNE/J&T reguler"} · Stok {variant ? variant.stock : product.stock}
+              {product.fresh || product.cold ? "Produk beku · hanya Kurir Toko" : "Produk kering · bisa JNE/J&T"} · Stok {variant ? variant.stock : product.stock}
             </div>
           </div>
         </div>

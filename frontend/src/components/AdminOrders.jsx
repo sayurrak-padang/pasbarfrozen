@@ -7,6 +7,8 @@ import { printLabels } from "@/lib/printLabel";
 import { STATUS_BADGE } from "@/components/AdminOverview";
 import { ShipmentPanel } from "@/components/ShipmentPanel";
 import { CancelRequestPanel } from "@/components/AdminExtras";
+import { AdminPaymentProof } from "@/components/AdminPaymentProof";
+import { paymentLabel } from "@/components/checkout/ManualPayment";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,6 +40,7 @@ const OrderDetail = ({ o, store, onChange }) => (
     <p className="text-muted-foreground">{o.address?.name} · {o.address?.phone} · {o.address?.full}</p>
     {o.delivery_slot && <p className="text-amber-700" data-testid={`admin-order-schedule-${o.order_id}`}>Jadwal kirim: {o.delivery_date} · {o.delivery_slot}</p>}
     {o.address?.lat != null && <a href={`https://www.openstreetmap.org/?mlat=${o.address.lat}&mlon=${o.address.lng}#map=18/${o.address.lat}/${o.address.lng}`} target="_blank" rel="noreferrer" className="text-primary underline inline-block" data-testid={`admin-order-map-${o.order_id}`}>Lihat lokasi di peta</a>}
+    <AdminPaymentProof order={o} onChange={onChange} />
     <CancelRequestPanel order={o} />
     <div className="flex gap-2 pt-1 flex-wrap">
       <Button size="sm" variant="outline" className="h-8 gap-1" onClick={() => printLabels([o], store)} data-testid={`print-label-${o.order_id}`}><Printer className="w-4 h-4" /> Cetak Label 100x100</Button>
@@ -145,7 +148,7 @@ export const AdminOrders = ({ orders }) => {
                 <Checkbox data-testid={`order-select-${o.order_id}`} checked={selected.includes(o.order_id)} onCheckedChange={(v) => toggle(o.order_id, v)} />
                 <div className="min-w-0">
                   <p className="font-mono font-bold text-xs">{o.order_id}</p>
-                  <p className="text-[11px] text-muted-foreground">{new Date(o.created_at).toLocaleString("id-ID", { dateStyle: "short", timeStyle: "short" })} · {o.items.length} item · {o.payment_method.toUpperCase()}</p>
+                  <p className="text-[11px] text-muted-foreground">{new Date(o.created_at).toLocaleString("id-ID", { dateStyle: "short", timeStyle: "short" })} · {o.items.length} item · {paymentLabel(o.payment_method)}{o.payment_status === "proof_submitted" ? " · cek bukti" : ""}</p>
                 </div>
                 <p className="truncate text-xs">{o.address?.name || o.user_name}</p>
                 <div className="min-w-0 text-xs">

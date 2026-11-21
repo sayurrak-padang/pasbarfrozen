@@ -8,6 +8,7 @@ import { AdminRecipes } from "@/components/AdminRecipes";
 import { AdminReviews } from "@/components/AdminReviews";
 import { ProductEditDialog } from "@/components/ProductEditDialog";
 import { AdminStoreSettings } from "@/components/AdminStoreSettings";
+import { AdminPaymentSettings } from "@/components/AdminPaymentSettings";
 import { AdminChat, useAdminUnread } from "@/components/AdminChat";
 import { AdminReports, downloadBlob } from "@/components/AdminReports";
 import { Download, Upload, Archive } from "lucide-react";
@@ -135,7 +136,7 @@ export default function Admin() {
           <TabsContent value="complaints"><AdminRefundTransfers /><AdminComplaints /></TabsContent>
           <TabsContent value="categories"><AdminCategories /></TabsContent>
 
-          <TabsContent value="store"><AdminStoreSettings /></TabsContent>
+          <TabsContent value="store"><div className="space-y-4"><AdminPaymentSettings /><AdminStoreSettings /></div></TabsContent>
 
           <TabsContent value="banners"><AdminBanners /></TabsContent>
 

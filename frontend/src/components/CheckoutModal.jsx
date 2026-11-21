@@ -21,7 +21,7 @@ import { BRAND, isServiceCity } from "@/config/brand";
 const validateCheckout = ({ addr, courier, schedule, payment }) => {
   if (!addr.name || !addr.phone || !addr.full) return "Lengkapi alamat pengiriman";
   if (!courier) return payment === "cod" ? `COD hanya tersedia dengan Kurir Toko untuk alamat ${BRAND.city.name}` : "Pilih jasa kirim";
-  if (courier.type !== "instan" && (!addr.district || !/^\d{5}$/.test(addr.postal || ""))) return "Lengkapi kecamatan & kode pos untuk JNE/J&T/Paxel";
+  if (courier.type !== "instan" && (!addr.district || !/^\d{5}$/.test(addr.postal || ""))) return "Lengkapi kecamatan & kode pos untuk JNE/J&T";
   if (courier.type === "instan" && !schedule?.slot) return "Pilih jadwal pengiriman";
   if (courier.type === "instan" && addr.lat == null) return "Tandai lokasi pengiriman di peta";
   return null;
@@ -56,8 +56,8 @@ export const CheckoutModal = ({ open, onOpenChange }) => {
   const voucherDiscount = voucher && !voucher.free_shipping ? Math.min(voucher.discount, subtotal) : 0;
   const total = Math.max(0, subtotal + finalShip - voucherDiscount);
   const instant = d.courier?.type === "instan";
-  const isPadang = isServiceCity(d.addr.city);
-  const shown = d.couriers.filter((c) => (payment === "cod" ? c.code === "toko" && isPadang : c.code !== "toko"));
+  const inCity = !d.addr.city || isServiceCity(d.addr.city);
+  const shown = d.couriers.filter((c) => (c.code === "toko" ? inCity : payment !== "cod"));
   const shownKey = shown.map((c) => c.code).join(",");
   useEffect(() => {
     if (!shown.some((c) => c.code === d.courier?.code)) d.setCourier(shown[0] || null);
@@ -99,8 +99,6 @@ export const CheckoutModal = ({ open, onOpenChange }) => {
       setSuccess(data);
       clearCart();
       qc.invalidateQueries({ queryKey: ["flash-sale"] });
-      if (data.qris) setQrisOrder(data);
-      else if (data.snap_token) openPayment(data);
     } catch (e) {
       toast.error(e.response?.data?.detail || "Gagal membuat pesanan");
     } finally {
@@ -116,7 +114,7 @@ export const CheckoutModal = ({ open, onOpenChange }) => {
         <DialogContent className="max-w-md" data-testid="order-success-modal">
           <DialogTitle className="sr-only">Pesanan berhasil</DialogTitle>
           <DialogDescription className="sr-only">Ringkasan pesanan dan status pembayaran</DialogDescription>
-          <CheckoutSuccess order={success} onPay={(o) => (o.qris ? setQrisOrder(o) : openPayment(o))} onViewOrders={() => closeSuccess(true)} />
+          <CheckoutSuccess order={success} onPay={(o) => (o.qris ? setQrisOrder(o) : openPayment(o))} onUpdate={setSuccess} onViewOrders={() => closeSuccess(true)} />
         </DialogContent>
         <QrisPayDialog order={qrisOrder} onClose={() => setQrisOrder(null)} onPaid={(o) => { setQrisOrder(null); setSuccess(o); }} />
       </Dialog>
@@ -134,7 +132,7 @@ export const CheckoutModal = ({ open, onOpenChange }) => {
           <AddressSection user={user} saved={d.saved} addrId={d.addrId} addr={d.addr} setAddr={d.setAddr} onPick={d.pickAddress}
             instant={instant} onManage={() => { onOpenChange(false); navigate("/addresses"); }}
             onFixAddress={(id) => { onOpenChange(false); navigate(`/addresses?edit=${id}`); }} />
-          <PaymentSection payment={payment} setPayment={setPayment} balance={d.balance} total={total} />
+          <PaymentSection payment={payment} setPayment={setPayment} />
           <CourierSection couriers={shown} courier={d.courier} setCourier={d.setCourier} ratesLoading={d.ratesLoading}
             hasFresh={hasFresh} hasCold={hasCold} schedule={schedule} setSchedule={setSchedule} payment={payment} po={items.some((i) => isPO(i.name))} />
           <VoucherSection voucher={voucher} input={voucherInput} setInput={setVoucherInput} error={voucherErr}

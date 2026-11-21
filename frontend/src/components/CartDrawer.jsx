@@ -8,7 +8,7 @@ import { SHIP_PROMO, shipPromoProgress } from "@/lib/shipPromo";
 import { SaveSubscription } from "@/components/SaveSubscription";
 
 export const CartDrawer = ({ open, onOpenChange, onCheckout }) => {
-  const { items, updateQty, removeItem, subtotal, count, hasFresh } = useCart();
+  const { items, updateQty, removeItem, subtotal, count, hasFresh, hasCold } = useCart();
   const { left, reached, pct: progress } = shipPromoProgress(subtotal);
 
   return (
@@ -71,9 +71,9 @@ export const CartDrawer = ({ open, onOpenChange, onCheckout }) => {
               {items.some((i) => isPO(i.name)) && (
                 <p className="text-xs bg-violet-50 text-violet-700 border border-violet-100 rounded-xl p-2.5" data-testid="cart-po-note">Keranjang berisi produk Pre Order H+1 — pesanan dikirim paling cepat besok.</p>
               )}
-              {hasFresh && (
+              {(hasFresh || hasCold) && (
                 <p className="text-[11px] text-amber-600 bg-amber-50 rounded-lg px-3 py-2">
-                  Keranjang berisi produk segar — pengiriman hanya via kurir instan (Grab/Gojek) atau Kurir Toko untuk COD.
+                  Keranjang berisi produk beku, jadi pengiriman hanya dengan Kurir Toko.
                 </p>
               )}
               <div className="flex justify-between text-sm">

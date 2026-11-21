@@ -6,6 +6,7 @@ import { paySnap, PAY_FAIL } from "@/lib/midtrans";
 import { useAuth } from "@/context/AuthContext";
 import { useEffect, useState } from "react";
 import { QrisPayDialog } from "@/components/QrisPayDialog";
+import { ManualPayBox, MANUAL_PAYMENTS, paymentLabel } from "@/components/checkout/ManualPayment";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ShipmentPanel } from "@/components/ShipmentPanel";
@@ -76,7 +77,7 @@ function OrderDetail({ o }) {
             <Line label={`Ongkir (${o.courier})`} value={rupiah(o.shipping_cost || 0)} />
             {o.discount > 0 && <Line label={`Diskon${o.voucher_code ? ` (${o.voucher_code})` : ""}`} value={`-${rupiah(o.discount)}`} tone="text-red-600" />}
             <Line label="Total" value={<b className="text-primary">{rupiah(o.total)}</b>} />
-            <Line label="Pembayaran" value={o.payment_method.toUpperCase()} />
+            <Line label="Pembayaran" value={paymentLabel(o.payment_method)} />
           </div>
           <div className="border-t pt-2 space-y-0.5">
             <p className="font-semibold">Alamat pengiriman</p>
@@ -152,6 +153,9 @@ export default function Orders() {
                   <CalendarClock className="w-3.5 h-3.5" /> Jadwal kirim {new Date(`${o.delivery_date}T00:00:00`).toLocaleDateString("id-ID", { weekday: "short", day: "numeric", month: "short" })} · {o.delivery_slot}
                 </p>
               )}
+              {MANUAL_PAYMENTS.includes(o.payment_method) && o.status === "Menunggu Pembayaran" && (
+                <ManualPayBox order={o} onDone={() => qc.invalidateQueries({ queryKey: ["my-orders"] })} />
+              )}
               {o.status === "Menunggu Pembayaran" && (o.snap_token || o.qris) && (
                 <div className="flex gap-2 mt-3">
                   <button data-testid={`order-pay-${o.order_id}`} onClick={() => payNow(o)} className="flex-1 h-9 rounded-xl bg-primary text-white text-sm font-semibold">Bayar Sekarang</button>
@@ -159,7 +163,7 @@ export default function Orders() {
                 </div>
               )}
               <div className="flex justify-between items-center mt-3 pt-3 border-t text-sm">
-                <span className="text-muted-foreground">{o.courier} · {o.payment_method.toUpperCase()}</span>
+                <span className="text-muted-foreground">{o.courier} · {paymentLabel(o.payment_method)}</span>
                 <span className="font-bold text-primary">{rupiah(o.total)}</span>
               </div>
               <OrderDetail o={o} />

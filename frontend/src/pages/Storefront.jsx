@@ -48,7 +48,7 @@ export default function Storefront() {
 
   const setMode = (m) => { setModeState(m); try { localStorage.setItem("rsp_delivery_mode", m); } catch { /* abaikan */ } };
   // Mode Reguler (JNE/J&T) hanya bisa untuk produk kering, jadi produk segar disembunyikan.
-  const fit = (list) => (mode === "reguler" ? list.filter((p) => !(p.product || p).fresh) : list);
+  const fit = (list) => (mode === "reguler" ? list.filter((p) => !(p.product || p).fresh && !(p.product || p).cold) : list);
 
   const { data: categories = [], isLoading: catLoading } = useQuery({ queryKey: ["categories"], queryFn: async () => (await api.get("/categories")).data });
   const { data: rawProducts = [], isLoading } = useQuery({
@@ -87,7 +87,7 @@ export default function Storefront() {
           <div className="flex items-center gap-3 rounded-2xl glass px-4 py-3 text-sm text-emerald-800" data-testid="home-notice">
             <Truck className="w-5 h-5 shrink-0" />
             <p className="flex-1 font-medium" data-testid="home-hero-ship-discount">
-              {mode === "reguler" ? "Mode Reguler: produk kering & sembako, dikirim JNE / J&T." : "Sayur segar dipetik pagi, diantar Grab / Gojek. Diskon ongkir hingga 10rb."}
+              {mode === "reguler" ? "Mode Reguler: produk kering, dikirim JNE / J&T ke luar kota." : `Frozen food diantar Kurir Toko di ${BRAND.city.name}. Ongkir Rp10.000 untuk 5 km pertama.`}
             </p>
             <button aria-label="Tutup" className="p-1 text-emerald-700" onClick={() => { sessionStorage.setItem("rsp_home_notice", "1"); setNoticeClosed(true); }} data-testid="home-notice-close"><X className="w-4 h-4" /></button>
           </div>
@@ -158,7 +158,7 @@ export default function Storefront() {
               {Array.from({ length: 6 }, (_, i) => `skeleton-${i}`).map((k) => <div key={k} className="aspect-[3/4] bg-slate-200 rounded-2xl animate-pulse" />)}
             </div>
           ) : products.length === 0 ? (
-            <p className="text-center text-muted-foreground py-12">{mode === "reguler" && rawProducts.length > 0 ? "Produk segar hanya bisa dikirim Instan. Pilih mode Instan untuk melihatnya." : "Produk tidak ditemukan."}</p>
+            <p className="text-center text-muted-foreground py-12">{mode === "reguler" && rawProducts.length > 0 ? "Produk beku hanya bisa dikirim Kurir Toko. Pilih mode Instan untuk melihatnya." : "Produk tidak ditemukan."}</p>
           ) : (
             <div className="grid grid-cols-2 gap-3">
               {products.map((p) => <ProductCard key={p.product_id} product={p} onOpen={setDetail} />)}
@@ -168,7 +168,7 @@ export default function Storefront() {
 
         <footer className="pt-2 pb-4 text-center text-xs text-slate-500">
           <p className="font-bold text-slate-700">{BRAND.name}</p>
-          <p className="mt-1">Bayar COD, QRIS, Transfer & VA · Kirim Grab/Gojek & JNE/J&T</p>
+          <p className="mt-1">Bayar COD, QRIS & Transfer · Kirim Kurir Toko & JNE/J&T</p>
           <p className="mt-1">© {BRAND.copyrightYear} {BRAND.name}</p>
         </footer>
       </main>

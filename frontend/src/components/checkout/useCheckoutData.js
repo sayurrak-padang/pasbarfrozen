@@ -31,13 +31,14 @@ export const useCheckoutData = ({ open, user, hasFresh, hasCold, subtotal, weigh
 
   const postal = (addr.postal || "").replace(/\D/g, "");
   useEffect(() => {
-    if (!open || postal.length !== 5) return;
+    if (!open || (postal.length !== 5 && addr.lat == null && !addr.city)) return;
     setRatesLoading(true);
-    api.post("/shipping/rates", { destination_postal_code: Number(postal), destination_area_id: addr.area_id || null, has_fresh: hasFresh, has_cold: hasCold, weight: weightGrams, value: subtotal })
+    api.post("/shipping/rates", { destination_postal_code: postal.length === 5 ? Number(postal) : null, destination_area_id: addr.area_id || null,
+      lat: addr.lat ?? null, lng: addr.lng ?? null, city: addr.city || null, has_fresh: hasFresh, has_cold: hasCold, weight: weightGrams, value: subtotal })
       .then(({ data }) => { if (data?.length) { setCouriers(data); setCourier((prev) => data.find((o) => o.code === prev?.code) || data[0]); } })
       .catch(warn("tarif ongkir"))
       .finally(() => setRatesLoading(false));
-  }, [postal, addr.area_id, open, hasFresh, hasCold, weightGrams, subtotal]);
+  }, [postal, addr.area_id, addr.lat, addr.lng, addr.city, open, hasFresh, hasCold, weightGrams, subtotal]);
 
   return { couriers, courier, setCourier, addr, setAddr, saved, addrId, pickAddress, balance, availVouchers, ratesLoading };
 };

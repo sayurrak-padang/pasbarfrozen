@@ -487,9 +487,8 @@ async def get_product(product_id: str):
 
 
 # ---------------- Shipping ----------------
+# Pasbar Frozen: produk beku hanya Kurir Toko (lihat store_courier_option); produk kering boleh JNE/J&T.
 SHIPPING = [
-    {"code": "grab", "name": "Grab Express", "type": "instan", "eta": "30-60 menit", "cost": 15000, "fresh_ok": True},
-    {"code": "gojek", "name": "Gojek Instan", "type": "instan", "eta": "30-60 menit", "cost": 14000, "fresh_ok": True},
     {"code": "jne", "name": "JNE Reguler", "type": "reguler", "eta": "2-3 hari", "cost": 9000, "fresh_ok": False},
     {"code": "jnt", "name": "J&T Express", "type": "reguler", "eta": "2-3 hari", "cost": 10000, "fresh_ok": False},
 ]
@@ -502,11 +501,8 @@ async def shipping_options(has_fresh: bool = True):
 
 
 COURIER_META = {
-    "grab": {"name": "Grab Express", "type": "instan", "fresh_ok": True},
-    "gojek": {"name": "Gojek Instan", "type": "instan", "fresh_ok": True},
     "jne": {"name": "JNE Reguler", "type": "reguler", "fresh_ok": False},
     "jnt": {"name": "J&T Express", "type": "reguler", "fresh_ok": False},
-    "paxel": {"name": "Paxel", "type": "reguler", "fresh_ok": False, "cold_ok": True},
 }
 
 class RateReq(BaseModel):
@@ -516,6 +512,9 @@ class RateReq(BaseModel):
     has_cold: bool = False
     weight: int = 1000
     value: int = 50000
+    lat: Optional[float] = None
+    lng: Optional[float] = None
+    city: Optional[str] = None
 
 @api_router.get("/shipping/areas")
 async def shipping_areas(q: str):
@@ -553,7 +552,7 @@ def _cheapest_per_courier(pricing: list) -> list:
 def _biteship_rates(data: RateReq) -> list:
     payload = {
         "origin_postal_code": int(BITESHIP_ORIGIN_POSTAL),
-        "couriers": "grab,gojek" if data.has_fresh else "grab,gojek,paxel" if data.has_cold else "grab,gojek,jne,jnt",
+        "couriers": "jne,jnt",
         "items": [{"name": f"Belanja {BRAND['shortName']}", "value": max(data.value, 1000), "quantity": 1, "weight": max(data.weight, 100)}],
     }
     if data.destination_area_id:
@@ -577,26 +576,46 @@ PADANG_CITY_RE = CITY["matchRegex"]  # kota layanan Kurir Toko / COD (brand.conf
 def is_store_courier(name) -> bool:
     return (name or "").strip().lower() == STORE_COURIER.lower()
 
-def _with_store_courier(options: list) -> list:
-    inst = [o for o in options if o["code"] in ("grab", "gojek")]
-    if not inst:
-        return options
-    cheapest = min(inst, key=lambda o: o["cost"])
-    return options + [{"code": "toko", "name": STORE_COURIER, "type": "instan", "eta": "Sesuai jadwal",
-                       "cost": cheapest["cost"], "fresh_ok": True, "source": cheapest["source"], "cod_only": True,
-                       "service": f"Tarif setara {cheapest['name']}", "service_code": ""}]
+# Tarif Kurir Toko: Rp10.000 untuk 5 km pertama, lalu per km berikutnya (atur lewat .env).
+STORE_COURIER_BASE = int(os.environ.get("STORE_COURIER_BASE", "10000"))
+STORE_COURIER_BASE_KM = float(os.environ.get("STORE_COURIER_BASE_KM", "5"))
+STORE_COURIER_PER_KM = int(os.environ.get("STORE_COURIER_PER_KM", "2000"))
+
+def _distance_km(lat1, lng1, lat2, lng2) -> float:
+    import math
+    r = 6371.0
+    p1, p2 = math.radians(lat1), math.radians(lat2)
+    dp, dl = p2 - p1, math.radians(lng2 - lng1)
+    a = math.sin(dp / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2) ** 2
+    return 2 * r * math.asin(math.sqrt(a))
+
+async def store_courier_option(lat=None, lng=None, city=None) -> Optional[dict]:
+    """Kurir Toko: hanya untuk alamat di kota layanan. Ongkir dihitung dari jarak lurus toko ke titik peta."""
+    if city and not _re.match(PADANG_CITY_RE, str(city), _re.I):
+        return None
+    cost, service = STORE_COURIER_BASE, f"Rp{STORE_COURIER_BASE:,} untuk {STORE_COURIER_BASE_KM:g} km pertama".replace(",", ".")
+    if lat is not None and lng is not None:
+        store = await db.settings.find_one({"key": "store"}, {"_id": 0, "lat": 1, "lng": 1}) or {}
+        o_lat, o_lng = store.get("lat", CITY["mapCenter"][0]), store.get("lng", CITY["mapCenter"][1])
+        km = _distance_km(float(o_lat), float(o_lng), float(lat), float(lng))
+        extra = max(0, -(-(km - STORE_COURIER_BASE_KM) // 1))  # pembulatan ke atas per km
+        cost = STORE_COURIER_BASE + int(extra) * STORE_COURIER_PER_KM
+        service = f"Jarak ± {km:.1f} km"
+    return {"code": "toko", "name": STORE_COURIER, "type": "instan", "eta": "Sesuai jadwal", "cost": cost,
+            "fresh_ok": True, "cold_ok": True, "source": "flat", "service": service, "service_code": ""}
 
 @api_router.post("/shipping/rates")
 async def shipping_rates(data: RateReq):
+    toko = await store_courier_option(data.lat, data.lng, data.city)
+    options = [toko] if toko else []
+    if data.has_fresh or data.has_cold:
+        return options  # produk beku/dingin hanya dikirim Kurir Toko
+    reg = []
     if BITESHIP_API_KEY and (data.destination_postal_code or data.destination_area_id):
-        options = _biteship_rates(data)
-        if options:
-            have = {o["code"] for o in options}
-            options += [{**s, "source": "flat"} for s in SHIPPING if s["fresh_ok"] and s["code"] not in have]
-        if options:
-            return _with_store_courier(options)
-    base = [s for s in SHIPPING if s["fresh_ok"]] if data.has_fresh or data.has_cold else SHIPPING
-    return _with_store_courier([{**s, "source": "flat"} for s in base])
+        reg = _biteship_rates(data)
+    if not reg:
+        reg = [{**x, "source": "flat"} for x in SHIPPING]
+    return options + reg
 
 
 # ---------------- Vouchers ----------------
@@ -1006,7 +1025,8 @@ async def _quote_shipping(data: OrderInput, items: list, subtotal: int) -> dict:
     req = RateReq(destination_postal_code=int(postal) if len(postal) == 5 else None,
                   destination_area_id=data.address.get("area_id") or None,
                   has_fresh=any(i.get("fresh") for i in items), has_cold=any(i.get("cold") for i in items),
-                  weight=sum(i["quantity"] * i.get("weight", 500) for i in items) or 500, value=subtotal)
+                  weight=sum(i["quantity"] * i.get("weight", 500) for i in items) or 500, value=subtotal,
+                  lat=data.address.get("lat"), lng=data.address.get("lng"), city=data.address.get("city") or None)
     options = await shipping_rates(req)
     opt = next((o for o in options if o["name"] == data.courier), None)
     if not opt:
@@ -1041,17 +1061,15 @@ def _validate_instant(data: OrderInput):
 
 @api_router.post("/orders")
 async def create_order(data: OrderInput, user=Depends(get_current_user)):
-    if data.payment_method not in ("cod", "qris", "va", "saldo"):
+    if data.payment_method not in PAYMENT_METHODS:
         raise HTTPException(status_code=400, detail="Metode pembayaran tidak didukung")
     if not data.items:
         raise HTTPException(status_code=400, detail="Keranjang kosong")
     store_courier = is_store_courier(data.courier)
     if data.payment_method == "cod" and not store_courier:
         raise HTTPException(status_code=400, detail="Pembayaran COD hanya bisa dengan Kurir Toko")
-    if store_courier and data.payment_method != "cod":
-        raise HTTPException(status_code=400, detail="Kurir Toko hanya untuk pembayaran COD")
     if store_courier and not _re.match(PADANG_CITY_RE, str(data.address.get("city") or ""), _re.I):
-        raise HTTPException(status_code=400, detail=f"Kurir Toko (COD) hanya untuk alamat di {CITY['name']}. Lengkapi kecamatan/kota alamat Anda")
+        raise HTTPException(status_code=400, detail=f"Kurir Toko hanya untuk alamat di {CITY['name']}. Lengkapi kecamatan/kota alamat Anda")
     items, subtotal = await _price_items(data.items)
     quote = await _quote_shipping(data, items, subtotal)
     data.courier_type = quote["type"]
@@ -1076,6 +1094,8 @@ async def create_order(data: OrderInput, user=Depends(get_current_user)):
     if not await reserve_flash(items):
         await adjust_stock(items, 1)
         raise HTTPException(status_code=400, detail="Kuota flash sale baru saja habis. Muat ulang keranjang untuk harga terbaru")
+    if data.payment_method in MANUAL_PAYMENTS:
+        order["payment_status"] = "awaiting_proof"
     try:
         qris = None
         if data.payment_method == "qris":
@@ -1206,7 +1226,7 @@ async def admin_delete_banner(banner_id: str, user=Depends(require_admin)):
 async def admin_products(user=Depends(require_admin)):
     return await db.products.find({}, {"_id": 0}).to_list(5000)
 
-DEFAULT_PRODUCT_IMG = "https://down-id.img.susercontent.com/file/ddf34ef69c127a501f70ea80a873c36b"
+DEFAULT_PRODUCT_IMG = "/logo.png"
 
 class ProductCreate(BaseModel):
     name: str = Field(min_length=1)
@@ -1413,6 +1433,78 @@ async def admin_update_order(order_id: str, data: OrderStatusUpdate, user=Depend
     if data.status in ("Dikirim", "Selesai"):
         notify_bg(order_id, "shipped" if data.status == "Dikirim" else "delivered")
     return await db.orders.find_one({"order_id": order_id}, {"_id": 0})
+
+# ---------------- Pembayaran manual (QRIS toko & transfer dengan bukti) ----------------
+# Pasbar Frozen: COD, QRIS milik toko, dan transfer rekening. Pembeli mengunggah bukti bayar,
+# admin memeriksa lalu menyetujui (pesanan jadi Diproses) atau menolak (pembeli unggah ulang).
+MANUAL_PAYMENTS = ("qris_toko", "transfer")
+PAYMENT_METHODS = ("cod",) + MANUAL_PAYMENTS
+PAYMENT_LABELS = {"cod": "COD", "qris_toko": "QRIS", "transfer": "Transfer Bank"}
+
+class BankAccount(BaseModel):
+    bank: str = Field(max_length=40)
+    number: str = Field(max_length=40)
+    holder: str = Field(max_length=60)
+
+class PaymentSettings(BaseModel):
+    qris_image: str = ""
+    qris_name: str = Field(default="", max_length=60)
+    banks: List[BankAccount] = Field(default_factory=list, max_length=5)
+    note: str = Field(default="", max_length=300)
+
+class ProofInput(BaseModel):
+    url: str
+
+class VerifyPayment(BaseModel):
+    approve: bool
+    note: str = Field(default="", max_length=300)
+
+@api_router.get("/payment-info")
+async def payment_info():
+    return await db.settings.find_one({"key": "payment"}, {"_id": 0, "key": 0}) or PaymentSettings().model_dump()
+
+@api_router.put("/admin/settings/payment")
+async def put_payment_settings(data: PaymentSettings, user=Depends(require_admin)):
+    if data.qris_image and not data.qris_image.startswith("/api/files/"):
+        raise HTTPException(status_code=400, detail="Unggah gambar QRIS lewat tombol unggah")
+    doc = data.model_dump()
+    await db.settings.update_one({"key": "payment"}, {"$set": doc}, upsert=True)
+    return doc
+
+@api_router.post("/orders/proof-upload")
+async def proof_upload(file: UploadFile = File(...), user=Depends(get_current_user)):
+    return {"url": await store_image(file, "payment-proofs")}
+
+@api_router.post("/orders/{order_id}/payment-proof")
+async def submit_payment_proof(order_id: str, data: ProofInput, user=Depends(get_current_user)):
+    if not data.url.startswith("/api/files/"):
+        raise HTTPException(status_code=400, detail="Bukti bayar tidak valid")
+    o = await db.orders.find_one({"order_id": order_id, "user_id": user["user_id"]}, {"_id": 0})
+    if not o:
+        raise HTTPException(status_code=404, detail="Pesanan tidak ditemukan")
+    if o["payment_method"] not in MANUAL_PAYMENTS or o["status"] != "Menunggu Pembayaran":
+        raise HTTPException(status_code=400, detail="Pesanan ini tidak menunggu bukti pembayaran")
+    await db.orders.update_one({"order_id": order_id}, {"$set": {
+        "payment_proof": data.url, "payment_status": "proof_submitted", "proof_at": now_iso(), "proof_note": ""}})
+    notify_owners_bg(order_id)
+    return await db.orders.find_one({"order_id": order_id}, {"_id": 0})
+
+@api_router.post("/admin/orders/{order_id}/verify-payment")
+async def verify_payment(order_id: str, data: VerifyPayment, user=Depends(require_admin)):
+    o = await db.orders.find_one({"order_id": order_id}, {"_id": 0})
+    if not o or o["payment_method"] not in MANUAL_PAYMENTS:
+        raise HTTPException(status_code=404, detail="Pesanan tidak ditemukan")
+    if o["status"] != "Menunggu Pembayaran":
+        raise HTTPException(status_code=400, detail=f"Pesanan berstatus {o['status']}")
+    if data.approve:
+        await db.orders.update_one({"order_id": order_id}, {"$set": {
+            "status": "Diproses", "payment_status": "paid", "paid_at": now_iso(), "proof_note": data.note}})
+        notify_bg(order_id, "paid")
+    else:
+        await db.orders.update_one({"order_id": order_id}, {"$set": {
+            "payment_status": "proof_rejected", "proof_note": data.note or "Bukti bayar belum sesuai, silakan unggah ulang"}})
+    return await db.orders.find_one({"order_id": order_id}, {"_id": 0})
+
 
 # ---------------- Store settings & Biteship dispatch ----------------
 class StoreSettings(BaseModel):
@@ -3671,17 +3763,28 @@ app.add_middleware(
 
 
 IMG = "https://static.prod-images.emergentagent.com/jobs/991204c2-b93d-47f7-827b-800ba8335f4e/images/"
+WASTORE = "https://wastore.id/uploads/products/"
 BANNERS_SEED = [
-    {"banner_id": "bn_flash", "title": "Flash Sale Hemat", "subtitle": "Diskon spesial frozen food pilihan hari ini",
+    {"banner_id": "bn_flash", "title": "Flash Sale Frozen", "subtitle": "Harga spesial daging, ayam & nugget pilihan hari ini",
      "cta_label": "Lihat Flash Sale", "link": "#flash-sale", "theme": "dark", "active": True, "order": 1,
-     "image_url": IMG + "9f80d50ff27813b9a1fb233a6d024bd21e9a69013db4281e4a2be4bc115a821f.jpeg"},
-    {"banner_id": "bn_ongkir", "title": "Gratis Ongkir", "subtitle": "Belanja min. Rp100.000 atau pakai voucher ONGKIRGRATIS",
+     "image_url": WASTORE + "prod_6a20f4e291a27.jpg"},
+    {"banner_id": "bn_ongkir", "title": "Ongkir Mulai Rp10.000", "subtitle": "Diantar Kurir Toko di Pasaman Barat, Rp10.000 untuk 5 km pertama",
      "cta_label": "Belanja Sekarang", "link": "#all-products", "theme": "light", "active": True, "order": 2,
-     "image_url": IMG + "4fafec15bd495ec39834d811ddc846e2f65d7172ccaf870b4f483c73af9b721f.jpeg"},
-    {"banner_id": "bn_segar", "title": "Dari Freezer, ke Meja Makan", "subtitle": "Diantar kurir toko di Pasaman Barat, atau lewat JNE & J&T",
+     "image_url": WASTORE + "prod_6a2111031efb8.jpg"},
+    {"banner_id": "bn_segar", "title": "Dari Freezer, ke Meja Makan", "subtitle": "Nugget, sosis & camilan beku favorit keluarga",
      "cta_label": "Belanja Sekarang", "link": "#all-products", "theme": "dark", "active": True, "order": 3,
-     "image_url": IMG + "bfa17e0ad628fd97aa2581b49dde75af93acf543b3a15f91eb369a8143f50592.jpeg"},
+     "image_url": WASTORE + "prod_6a4cb2bd86b58.jpg"},
 ]
+
+async def migrate_banners_pasbar():
+    """Sekali jalan: ganti 3 banner bawaan template (foto sayur) dengan banner frozen food."""
+    if await db.settings.find_one({"key": "banners_pasbar_v1"}):
+        return
+    for b in BANNERS_SEED:
+        old = await db.banners.find_one({"banner_id": b["banner_id"]}, {"_id": 0, "image_url": 1})
+        if old and "emergentagent.com" in (old.get("image_url") or ""):
+            await db.banners.update_one({"banner_id": b["banner_id"]}, {"$set": dict(b)})
+    await db.settings.insert_one({"key": "banners_pasbar_v1", "at": datetime.now(timezone.utc).isoformat()})
 
 @app.on_event("startup")
 async def seed():
@@ -3730,6 +3833,7 @@ async def _seed_core():
     if await db.banners.count_documents({}) == 0:
         await db.banners.insert_many([dict(b) for b in BANNERS_SEED])
         logger.info("Seeded banners")
+    await migrate_banners_pasbar()
     try:
         n = await merge_duplicate_users()
         if n:
