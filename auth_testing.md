@@ -20,4 +20,4 @@ print('Session token: ' + sessionToken);
 Test: curl GET /api/auth/me -H "Authorization: Bearer <token_or_session>"
 
 ## Admin
-Admin seeded at startup: admin@raksayur.id / Admin@123 (role=admin)
+- Admin dibuat saat startup dari ADMIN_EMAIL / ADMIN_PASSWORD di backend/.env (role=admin)
