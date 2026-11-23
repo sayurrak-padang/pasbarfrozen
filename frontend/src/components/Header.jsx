@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Search, ChevronDown, UserRound, Zap, Truck, Clock3 } from "lucide-react";
+import { Search, ChevronDown, UserRound, Zap, Truck, Clock3, MessageCircle } from "lucide-react";
 import { LOGO_URL, api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { BRAND } from "@/config/brand";
@@ -9,6 +9,29 @@ import { BRAND } from "@/config/brand";
 export const DELIVERY_MODES = {
   instan: { title: "Dikirim Hari Ini", label: "Instan", hint: "Kurir Toko", icon: Zap, placeholder: "Cari ayam, daging, nugget, sosis..." },
   reguler: { title: "Dikirim Reguler", label: "Reguler", hint: "JNE / J&T", icon: Truck, placeholder: "Cari produk kering & sembako..." },
+};
+
+// Tombol chat di kanan atas, di sebelah tombol akun. Membuka panel ChatWidget lewat event.
+const HeaderChatButton = () => {
+  const [unread, setUnread] = useState(0);
+  useEffect(() => {
+    const on = (e) => setUnread(e.detail || 0);
+    window.addEventListener("rsp:chat-unread", on);
+    window.__rspChatHeader = (window.__rspChatHeader || 0) + 1;
+    window.dispatchEvent(new Event("rsp:chat-header"));
+    return () => {
+      window.removeEventListener("rsp:chat-unread", on);
+      window.__rspChatHeader = Math.max(0, (window.__rspChatHeader || 1) - 1);
+      window.dispatchEvent(new Event("rsp:chat-header"));
+    };
+  }, []);
+  return (
+    <button onClick={() => window.dispatchEvent(new Event("rsp:toggle-chat"))} data-testid="header-chat-btn" aria-label="Chat admin"
+      className="relative w-8 h-8 rounded-full ring-2 ring-white flex items-center justify-center shrink-0">
+      <MessageCircle className="w-4 h-4" />
+      {unread > 0 && <span className="absolute -top-1.5 -right-1.5 min-w-4 h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center" data-testid="header-chat-unread">{unread}</span>}
+    </button>
+  );
 };
 
 // Header gaya claymorphism, ringkas. Warna dari palet --rs-* di index.css: lokasi kirim, akun, pencarian dan pilihan pengiriman.
@@ -59,6 +82,7 @@ export const Header = ({ search, setSearch, mode, setMode }) => {
             Masuk
           </button>
         )}
+        {user && user.role !== "admin" && <HeaderChatButton />}
       </div>
 
       {setSearch && (

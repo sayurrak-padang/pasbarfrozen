@@ -296,17 +296,27 @@ def run_bg(coro):
 def notify_bg(order_id: str, event: str):
     run_bg(notify_order(order_id, event))
 
-async def notify_owners(order_id: str):
-    r = await db.orders.update_one({"order_id": order_id, "owner_alerted": {"$ne": True}}, {"$set": {"owner_alerted": True}})
+OWNER_EVENTS = {
+    "new": "Pesanan BARU *{oid}* · {total} · {qty} item · {courier} · {pay} · {name} ({phone}).",
+    "proof": "Bukti bayar masuk untuk pesanan *{oid}* · {total} · {pay}. Periksa di Admin > Pesanan.",
+    "paid": "Pesanan LUNAS *{oid}* · {total} · {qty} item · {courier} · {name} ({phone}). Segera siapkan pesanan.",
+}
+
+async def notify_owners(order_id: str, event: str = "paid"):
+    """Kirim WA ke nomor owner (Admin > Toko > nomor owner) untuk pesanan baru, bukti bayar, atau lunas."""
+    key = f"owner_{event}"
+    r = await db.orders.update_one({"order_id": order_id, "owner_alerts": {"$ne": key}}, {"$addToSet": {"owner_alerts": key}})
     store = await db.settings.find_one({"key": "store"}, {"_id": 0}) or {}
     if not r.modified_count or not store.get("owner_phones"):
         return
     o = await db.orders.find_one({"order_id": order_id}, {"_id": 0})
     a = o.get("address") or {}
-    text = (f"Pesanan LUNAS *{order_id}* · Rp{o['total']:,} · {sum(i['quantity'] for i in o['items'])} item · "
-            f"{o.get('courier', '')} · {a.get('name', '')} ({a.get('phone', '')}). Segera siapkan pesanan.").replace(",", ".")
+    text = OWNER_EVENTS[event].format(
+        oid=order_id, total=f"Rp{o['total']:,}".replace(",", "."), qty=sum(i["quantity"] for i in o["items"]),
+        courier=o.get("courier", ""), pay={"cod": "COD", "qris_toko": "QRIS", "transfer": "Transfer"}.get(o["payment_method"], o["payment_method"]),
+        name=a.get("name", ""), phone=a.get("phone", ""))
     for phone in store["owner_phones"]:
-        entry = {"event": "owner_paid", "to": phone, "at": now_iso()}
+        entry = {"event": key, "to": phone, "at": now_iso()}
         try:
             entry["sid"] = await asyncio.to_thread(_send_wa, phone, "Owner", order_id, text)
             entry["status"] = "sent"
@@ -315,8 +325,8 @@ async def notify_owners(order_id: str):
             logger.error(f"Owner alert {order_id} -> {phone} failed: {e.msg}")
         await db.orders.update_one({"order_id": order_id}, {"$push": {"notifications": entry}})
 
-def notify_owners_bg(order_id: str):
-    run_bg(notify_owners(order_id))
+def notify_owners_bg(order_id: str, event: str = "paid"):
+    run_bg(notify_owners(order_id, event))
 
 @api_router.post("/auth/otp/send")
 async def otp_send(data: OtpSend):
@@ -1122,8 +1132,7 @@ async def create_order(data: OrderInput, user=Depends(get_current_user)):
     await db.orders.insert_one(dict(order))
     await db.carts.delete_one({"user_id": user["user_id"]})
     notify_bg(order_id, "created")
-    if data.payment_method == "saldo":
-        notify_owners_bg(order_id)
+    notify_owners_bg(order_id, "new")
     return clean(order)
 
 @api_router.get("/orders")
@@ -1486,7 +1495,8 @@ async def submit_payment_proof(order_id: str, data: ProofInput, user=Depends(get
         raise HTTPException(status_code=400, detail="Pesanan ini tidak menunggu bukti pembayaran")
     await db.orders.update_one({"order_id": order_id}, {"$set": {
         "payment_proof": data.url, "payment_status": "proof_submitted", "proof_at": now_iso(), "proof_note": ""}})
-    notify_owners_bg(order_id)
+    await db.orders.update_one({"order_id": order_id}, {"$pull": {"owner_alerts": "owner_proof"}})  # unggah ulang = kabari lagi
+    notify_owners_bg(order_id, "proof")
     return await db.orders.find_one({"order_id": order_id}, {"_id": 0})
 
 @api_router.post("/admin/orders/{order_id}/verify-payment")
